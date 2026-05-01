@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: hsl(210, 40%, 98%);
+    --foreground: hsl(222.2, 84%, 4.9%);
+    --card: hsl(0, 0%, 100%);
+    --card-foreground: hsl(222.2, 84%, 4.9%);
+    --popover: hsl(0, 0%, 100%);
+    --popover-foreground: hsl(222.2, 84%, 4.9%);
+    
+    /* Vibrant deep blue/purple primary */
+    --primary: hsl(252, 65%, 60%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    
+    --secondary: hsl(240, 4.8%, 12.9%);
+    --secondary-foreground: hsl(0, 0%, 98%);
+    --muted: hsl(240, 4.8%, 95%);
+    --muted-foreground: hsl(240, 5%, 35%);
+    
+    /* Electric Cyan accent */
+    --accent: hsl(190, 90%, 50%);
+    --accent-foreground: hsl(0, 0%, 98%);
+    
+    --destructive: hsl(0, 84.2%, 60.2%);
+    --destructive-foreground: hsl(0, 0%, 98%);
+    --border: hsl(240, 5%, 90%);
+    --input: hsl(240, 5%, 90%);
+    --ring: hsl(252, 65%, 60%);
+    
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card-hover:hover::before {
+  opacity: 1;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px hsl(var(--primary) / 0.2);
+  border-color: transparent;
+}
+
+.ai-badge {
+  background: linear-gradient(45deg, hsl(var(--accent)), hsl(var(--primary)));
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+}
+
+.glass-panel {
+  background: hsl(var(--card) / 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
