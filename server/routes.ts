@@ -133,8 +133,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create assessment record
       const assessment = await storage.createHeartAssessment(validatedData);
       
-      // Get AI risk assessment
-      const riskAssessment = await assessHeartRisk(validatedData);
+      // Get AI risk assessment (validated payload matches runtime shape; satisfies assessHeartRisk strict typing)
+      const riskAssessment = await assessHeartRisk(
+        validatedData as Parameters<typeof assessHeartRisk>[0],
+      );
       
       // Update assessment with risk data
       assessment.riskAssessment = riskAssessment;

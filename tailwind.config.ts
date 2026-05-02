@@ -63,9 +63,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        sans: ["var(--font-sans)", "DM Sans", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Syne", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
       },
       keyframes: {
         "accordion-down": {

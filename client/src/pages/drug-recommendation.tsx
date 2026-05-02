@@ -3,15 +3,16 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Link } from "wouter";
 import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { medicalApi, drugRecommendationApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -23,6 +24,8 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const COND_MAX = 2000;
 
 export default function DrugRecommendation() {
   const [recommendationResult, setRecommendationResult] = useState<any>(null);
@@ -36,6 +39,8 @@ export default function DrugRecommendation() {
       medicalConditions: "",
     },
   });
+
+  const mc = form.watch("medicalConditions") ?? "";
 
   const { data: reasonsData, isLoading: reasonsLoading } = useQuery({
     queryKey: ["/api/medical/alternative-reasons"],
@@ -67,195 +72,246 @@ export default function DrugRecommendation() {
 
   const reasons = reasonsData?.reasons || [];
 
+  const emptyMol = (
+    <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-[var(--radius-md)] bg-[var(--msc-accent-teal-light)] text-[var(--msc-accent-teal)]">
+      <svg className="h-16 w-16 opacity-90" fill="none" stroke="currentColor" strokeWidth="1.4" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="6" cy="7" r="1.5" />
+        <circle cx="18" cy="7" r="1.5" />
+        <circle cx="9" cy="17" r="1.5" />
+        <circle cx="17" cy="17" r="1.5" />
+        <path strokeLinecap="round" d="M8 8l4 4M16 8l-4 4M10 13l4 7" />
+      </svg>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <section className="py-16 bg-background">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-4">AI Drug Recommendation System</h1>
-            <p className="text-muted-foreground">Find alternative medicines using NLP and cosine similarity matching</p>
+    <div className="msc-page-bg">
+      <div className="msc-animate-page msc-inner pb-16">
+        <Navbar />
+        <main className="msc-section-pad mx-auto">
+          <div className="mb-8">
+            <h1 className="font-display text-center text-3xl font-bold text-[var(--text-heading)] md:text-[40px]">
+              AI Drug Recommendation System
+            </h1>
+            <p className="mx-auto mt-3 max-w-3xl text-center font-sans text-base text-[var(--text-muted)]">
+              Find alternative medicines using NLP and cosine similarity matching.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {["NLP", "Cosine Similarity", "10,000+ Drugs"].map((t) => (
+                <span
+                  key={t}
+                  className="rounded-[var(--radius-pill)] bg-[var(--msc-accent-teal-light)] px-3 py-1 font-sans text-[12px] font-semibold text-[var(--msc-accent-teal)]"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Drug Search Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <i className="fas fa-pills text-accent"></i>
-                  <span>Search for Drug Alternatives</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="currentMedication"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Current Medication</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                placeholder="Enter medication name..."
-                                {...field}
-                                className="pr-10"
-                                data-testid="input-medication"
-                              />
-                              <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="reason"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Reason for Alternative</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-reason">
-                                <SelectValue placeholder="Select reason..." />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {reasonsLoading ? (
-                                <SelectItem value="loading" disabled>Loading...</SelectItem>
-                              ) : (
-                                reasons.map((reason: string) => (
-                                  <SelectItem key={reason} value={reason}>
-                                    {reason}
-                                  </SelectItem>
-                                ))
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div
+              className="rounded-[var(--radius-lg)] border border-[var(--msc-border)] bg-[var(--bg-surface)] p-8 shadow-[var(--shadow-md)]"
+              style={{ borderTop: "3px solid var(--msc-accent-teal)", borderBottomWidth: 1 }}
+            >
+              <h2 className="font-display text-xl font-bold text-[var(--text-heading)]">Search for Drug Alternatives</h2>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="currentMedication"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="mb-2 block font-sans text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                          Current Medication
+                        </label>
+                        <FormControl>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--msc-accent-teal)]">
+                              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M4 14h16v6H4z" strokeLinejoin="round" />
+                                <path d="M8 14V8l4-3 4 3v6" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </span>
+                            <Input
+                              placeholder="Enter medication name e.g. Metformin..."
+                              className={cn(
+                                "h-12 rounded-[10px] border-[1.5px] border-[var(--msc-border)] pl-[46px]",
+                                "focus-visible:border-[var(--msc-accent-teal)] focus-visible:ring-[3px] focus-visible:ring-[rgba(13,148,136,0.15)]",
                               )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="medicalConditions"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Medical Conditions</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="List any allergies or medical conditions..."
                               {...field}
-                              rows={2}
+                              data-testid="input-medication"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="reason"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="mb-2 block font-sans text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                          Reason for Alternative
+                        </label>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger
+                              data-testid="select-reason"
+                              className={cn(
+                                "h-12 rounded-[10px] border-[1.5px] border-[var(--msc-border)] [&>svg]:text-[var(--text-muted)]",
+                                "focus:ring-[3px] focus:ring-[rgba(13,148,136,0.15)] focus:ring-offset-0",
+                              )}
+                            >
+                              <SelectValue placeholder="Select reason..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {reasonsLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading...
+                              </SelectItem>
+                            ) : (
+                              reasons.map((reason: string) => (
+                                <SelectItem key={reason} value={reason}>
+                                  {reason}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="medicalConditions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="mb-2 block font-sans text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                          Medical Conditions
+                        </label>
+                        <FormControl>
+                          <div className="relative">
+                            <Textarea
+                              placeholder="List any allergies, conditions, or contraindications..."
+                              rows={3}
+                              className={cn(
+                                "resize-y rounded-[10px] border-[1.5px] border-[var(--msc-border)] placeholder:text-[var(--text-placeholder)]",
+                                "focus-visible:border-[var(--msc-accent-teal)] focus-visible:ring-[3px] focus-visible:ring-[rgba(13,148,136,0.15)]",
+                              )}
+                              maxLength={COND_MAX}
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value.slice(0, COND_MAX))}
                               data-testid="textarea-conditions"
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-accent hover:bg-accent/90" 
+                            <span className="pointer-events-none absolute bottom-2 right-3 font-mono text-[11px] text-[var(--text-muted)]">
+                              {(field.value ?? "").length}/{COND_MAX}
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div>
+                    <Button
+                      type="submit"
                       disabled={recommendMutation.isPending}
+                      className="w-full rounded-[var(--radius-pill)] bg-[var(--msc-accent-teal)] py-[14px] font-sans font-semibold text-white shadow-md transition-[transform,box-shadow] hover:scale-[1.01] hover:bg-[#0b7d71] hover:shadow-[0_4px_20px_rgba(13,148,136,0.3)]"
                       data-testid="button-find-alternatives"
                     >
                       {recommendMutation.isPending ? (
                         <>
-                          <i className="fas fa-spinner fa-spin mr-2"></i>
+                          <span
+                            className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent"
+                            aria-hidden
+                          />
                           Finding Alternatives...
                         </>
                       ) : (
                         <>
-                          <i className="fas fa-pills mr-2"></i>
+                          <i className="fas fa-pills mr-2" />
                           Find AI-Powered Alternatives
                         </>
                       )}
                     </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-            
-            {/* Alternative Recommendations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <i className="fas fa-list text-accent"></i>
-                  <span>Alternative Recommendations</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                    <p className="mt-3 text-center font-sans text-[11px] tracking-wide text-[var(--text-muted)]">
+                      🔒 HIPAA-safe · 🧬 NLP-Powered · ⚕ Pharmacist-reviewed data
+                    </p>
+                  </div>
+                </form>
+              </Form>
+            </div>
+
+            <div
+              className="rounded-[var(--radius-lg)] border border-[var(--msc-border)] bg-[var(--bg-surface)] p-8 shadow-[var(--shadow-md)]"
+              style={{ borderTop: "3px solid var(--msc-accent-teal)", borderBottomWidth: 1 }}
+            >
+              <h2 className="font-display text-xl font-bold text-[var(--text-heading)]">Alternative Recommendations</h2>
+              <div className="mt-8 space-y-4">
                 {recommendationResult?.alternatives?.length > 0 ? (
-                  <div className="space-y-4">
-                    {recommendationResult.alternatives.map((alternative: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors"
-                        data-testid={`card-alternative-${index}`}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-semibold text-card-foreground" data-testid={`text-drug-name-${index}`}>
-                            {alternative.name}
-                          </h4>
-                          <Badge 
-                            variant={alternative.similarity >= 90 ? "default" : "secondary"}
-                            data-testid={`badge-similarity-${index}`}
-                          >
-                            {alternative.similarity}% Match
-                          </Badge>
+                  recommendationResult.alternatives.map((alternative: any, index: number) => (
+                    <div
+                      key={index}
+                      className="msc-card-lift rounded-[var(--radius-md)] border border-[var(--msc-border)] p-4 hover:border-[var(--msc-accent-teal)]"
+                      data-testid={`card-alternative-${index}`}
+                    >
+                      <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                        <h4 className="font-sans font-semibold text-[var(--text-heading)]" data-testid={`text-drug-name-${index}`}>
+                          {alternative.name}
+                        </h4>
+                        <Badge className="rounded-[var(--radius-pill)] bg-[var(--msc-accent-teal-light)] font-mono text-[10px] font-semibold text-[var(--msc-accent-teal)]">
+                          <span data-testid={`badge-similarity-${index}`}>{alternative.similarity}% Match</span>
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 font-sans text-sm text-[var(--text-body)]">
+                        <div>
+                          <span className="font-medium text-[var(--text-heading)]">Active Ingredients:</span>{" "}
+                          <span data-testid={`text-ingredients-${index}`}>{alternative.ingredients}</span>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-sm font-medium text-card-foreground">Active Ingredients:</span>
-                            <span className="text-sm text-muted-foreground ml-2" data-testid={`text-ingredients-${index}`}>
-                              {alternative.ingredients}
-                            </span>
-                          </div>
-                          
-                          <div>
-                            <span className="text-sm font-medium text-card-foreground">Dosage:</span>
-                            <span className="text-sm text-muted-foreground ml-2" data-testid={`text-dosage-${index}`}>
-                              {alternative.dosage}
-                            </span>
-                          </div>
-                          
-                          <div>
-                            <span className="text-sm font-medium text-card-foreground">Benefits:</span>
-                            <span className="text-sm text-muted-foreground ml-2" data-testid={`text-benefits-${index}`}>
-                              {alternative.benefits}
-                            </span>
-                          </div>
+                        <div>
+                          <span className="font-medium text-[var(--text-heading)]">Dosage:</span>{" "}
+                          <span data-testid={`text-dosage-${index}`}>{alternative.dosage}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-[var(--text-heading)]">Benefits:</span>{" "}
+                          <span data-testid={`text-benefits-${index}`}>{alternative.benefits}</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <i className="fas fa-pills text-4xl mb-4 opacity-50"></i>
-                    <p>Enter a medication name to find AI-powered alternatives</p>
+                  <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--msc-border)] bg-[var(--msc-accent-teal-light)] px-6 py-10 text-center text-[var(--msc-accent-teal)]">
+                    {emptyMol}
+                    <p className="font-sans text-sm text-[var(--text-muted)]">Enter a medication to explore AI-assisted alternatives.</p>
                   </div>
                 )}
-                
-                <Alert className="mt-4">
-                  <i className="fas fa-info-circle"></i>
-                  <AlertDescription>
-                    <strong>Pharmacist Consultation:</strong> Always consult with your pharmacist or doctor before switching medications.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
+
+                <aside className="rounded-[var(--radius-sm)] border-l-[3px] border-[var(--msc-accent-teal)] bg-[var(--msc-accent-teal-light)] p-4">
+                  <p className="font-sans text-[12px] font-bold text-[var(--msc-accent-teal)]">Pharmacist Consultation</p>
+                  <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-body)]">
+                    Always confirm changes with your pharmacist or prescriber before switching medications.
+                  </p>
+                </aside>
+
+                <p className="pt-4 text-center">
+                  <Link href="/reports" className="font-sans text-[13px] font-semibold text-[var(--msc-accent-teal)] transition-colors hover:underline">
+                    View history in Reports
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
-      
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }

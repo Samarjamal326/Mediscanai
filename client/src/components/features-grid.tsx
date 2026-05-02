@@ -1,68 +1,107 @@
 import { Link } from "wouter";
 
+function IconBrainStethoscope({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M12 17h.01M12 14a3 3 0 100-6 3 3 0 000 6z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconMolecule({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+      <circle cx="12" cy="12" r="2.2" />
+      <circle cx="7" cy="8" r="1.8" />
+      <circle cx="17" cy="8" r="1.8" />
+      <circle cx="10" cy="17" r="1.8" />
+      <circle cx="16" cy="17" r="1.8" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 10l-2-1M14 10l2-1M11 13l-1 3M13 13l1 3" />
+    </svg>
+  );
+}
+
+function IconHeartPulse({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M12 21s-6.716-4.35-9-8.5C1.5 8.5 4.5 5 8.5 5c2.064 0 3.563 1.32 3.5 4 .063-2.68 1.564-4 3.5-4 4 0 7 3.5 6.5 7.5-2.284 4.15-9 8.5-9 8.5zm.5-9.8l1.8 3.2 2.5-7-2.2.9-2.1-.8-2.1.8-2.2-.9 2.5 7 1.8-3.2z" />
+    </svg>
+  );
+}
+
 export default function FeaturesGrid() {
   const features = [
     {
       href: "/disease-prediction",
-      icon: "fas fa-stethoscope",
       title: "Disease Prediction",
-      description: "AI-powered disease prediction using RandomForest Classifier based on symptoms",
-      color: "primary",
-      cta: "Start Diagnosis"
+      description:
+        "AI-powered symptom analysis to highlight possible conditions and sensible next-step guidance — not a formal diagnosis.",
+      cta: "Start Diagnosis",
+      iconBg: "bg-[var(--msc-primary-light)] text-[var(--msc-primary)]",
+      Icon: IconBrainStethoscope,
+      borderHover: "hover:border-[var(--msc-primary)]",
     },
     {
       href: "/drug-recommendation",
-      icon: "fas fa-pills",
       title: "Drug Finder",
-      description: "NLP & cosine similarity for accurate alternative medicine matching",
-      color: "accent",
-      cta: "Find Alternatives"
+      description: "Natural-language similarity to surface alternative medicines you can discuss with your clinician.",
+      cta: "Find Alternatives",
+      iconBg: "bg-[var(--msc-accent-teal-light)] text-[var(--msc-accent-teal)]",
+      Icon: IconMolecule,
+      borderHover: "hover:border-[var(--msc-accent-teal)]",
     },
     {
       href: "/heart-assessment",
-      icon: "fas fa-heart",
       title: "Heart Risk",
-      description: "ML-based heart disease risk assessment using lifestyle factors",
-      color: "destructive",
-      cta: "Assess Risk"
-    }
+      description:
+        "Lifestyle and history inputs combined into a cardiovascular risk outlook for education and motivation.",
+      cta: "Assess Risk",
+      iconBg: "bg-[var(--msc-danger-light)] text-[var(--msc-danger)]",
+      Icon: IconHeartPulse,
+      borderHover: "hover:border-[var(--msc-danger)]",
+    },
   ];
 
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
-      {/* Decorative background blur */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Comprehensive AI Healthcare Solutions</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Our platform combines cutting-edge AI technologies to deliver personalized healthcare intelligence
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {features.map((feature, index) => {
-            return (
-            <Link key={index} href={feature.href}>
-              <div 
-                className="bg-white rounded-2xl p-8 card-hover cursor-pointer h-full flex flex-col border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
-                data-testid={`card-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
+    <section className="msc-stagger-4 relative msc-inner overflow-hidden py-20 md:py-24">
+      <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6 lg:px-8">
+        <h2 className="font-display text-3xl font-bold text-[var(--text-heading)] md:text-[36px]">
+          Comprehensive AI Healthcare Solutions
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl font-sans text-base text-[var(--text-muted)] md:text-[16px]">
+          Modular tools grounded in retrieval and structured medical prompts — unified under one calm interface.
+        </p>
+
+        <div className="mt-14 grid grid-cols-1 gap-8 text-left md:grid-cols-3">
+          {features.map((feature) => (
+            <Link key={feature.href} href={feature.href}>
+              <article
+                className={`msc-card-lift flex h-full cursor-pointer flex-col rounded-[var(--radius-lg)] border border-[var(--msc-border)] bg-[var(--bg-surface)] p-8 shadow-[var(--shadow-sm)] ${feature.borderHover} group`}
+                data-testid={`card-${feature.title.toLowerCase().replace(/\s+/g, "-")}`}
               >
-                <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
-                  <i className={`${feature.icon} text-2xl`}></i>
+                <div
+                  className={`mb-6 flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${feature.iconBg}`}
+                >
+                  <feature.Icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                <p className="text-slate-600 font-medium text-base mb-6 flex-grow">
+                <h3 className="font-display text-lg font-bold text-[var(--text-heading)]">{feature.title}</h3>
+                <p className="mt-3 flex-grow font-sans text-sm leading-[1.65] text-[var(--text-body)]">
                   {feature.description}
                 </p>
-                <div className="flex items-center text-blue-600 font-bold group">
+                <div className="mt-8 flex items-center font-sans text-sm font-semibold text-[var(--msc-primary)]">
                   <span>{feature.cta}</span>
-                  <i className="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                  <span className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
-              </div>
+              </article>
             </Link>
-          )})}
+          ))}
         </div>
       </div>
     </section>

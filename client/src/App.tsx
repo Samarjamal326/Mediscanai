@@ -8,6 +8,8 @@ import DiseasePrediction from "@/pages/disease-prediction";
 import DrugRecommendation from "@/pages/drug-recommendation";
 import HeartAssessment from "@/pages/heart-assessment";
 import MediBot from "@/pages/medibot";
+import Profile from "@/pages/profile";
+import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +19,8 @@ function Router() {
       <Route path="/disease-prediction" component={DiseasePrediction} />
       <Route path="/drug-recommendation" component={DrugRecommendation} />
       <Route path="/heart-assessment" component={HeartAssessment} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/profile" component={Profile} />
       <Route path="/medibot" component={MediBot} />
       <Route component={NotFound} />
     </Switch>

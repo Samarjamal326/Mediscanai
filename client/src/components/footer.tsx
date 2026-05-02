@@ -2,65 +2,81 @@ import { Link } from "wouter";
 
 export default function Footer() {
   return (
-    <footer className="bg-card border-t border-border py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="relative z-[1] border-t border-[var(--msc-border)] bg-[var(--bg-surface)] py-12">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-heartbeat text-primary-foreground text-lg"></i>
-              </div>
-              <span className="text-xl font-bold text-foreground">HealthAI</span>
+            <div className="mb-4 flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--msc-primary-light)]">
+                <i className="fas fa-heart-pulse text-lg text-[var(--msc-primary)]" />
+              </span>
+              <span className="font-display text-lg font-bold text-[var(--text-heading)]">
+                Medi<span className="text-[var(--msc-primary)]">SCAN</span>
+                <span className="text-[var(--msc-accent-teal)]"> Ai</span>
+              </span>
             </div>
-            <p className="text-muted-foreground text-sm">
-              AI-Powered Healthcare Intelligence Network providing accurate disease predictions and personalized medical recommendations.
+            <p className="text-sm leading-relaxed text-[var(--text-muted)]">
+              AI-powered healthcare intelligence for symptom insights, alternatives, and risk awareness — informational
+              only.
             </p>
           </div>
-          
+
           <div>
-            <h4 className="font-semibold text-card-foreground mb-4">Features</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="mb-4 font-display text-sm font-bold text-[var(--text-heading)]">Features</h4>
+            <ul className="space-y-2 text-sm text-[var(--text-muted)]">
               <li>
-                <Link href="/disease-prediction" className="hover:text-foreground transition-colors">
+                <Link href="/disease-prediction" className="transition-colors hover:text-[var(--msc-primary)]">
                   Disease Prediction
                 </Link>
               </li>
               <li>
-                <Link href="/drug-recommendation" className="hover:text-foreground transition-colors">
+                <Link href="/drug-recommendation" className="transition-colors hover:text-[var(--msc-accent-teal)]">
                   Drug Finder
                 </Link>
               </li>
               <li>
-                <Link href="/heart-assessment" className="hover:text-foreground transition-colors">
-                  Heart Risk Assessment
+                <Link href="/heart-assessment" className="transition-colors hover:text-[var(--msc-danger)]">
+                  Heart Risk
+                </Link>
+              </li>
+              <li>
+                <Link href="/reports" className="transition-colors hover:text-[var(--msc-primary)]">
+                  Reports
                 </Link>
               </li>
             </ul>
           </div>
-          
+
           <div>
-            <h4 className="font-semibold text-card-foreground mb-4">Technology</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Machine Learning</li>
-              <li>Natural Language Processing</li>
-              <li>Vector Databases</li>
-              <li>MERN Stack</li>
+            <h4 className="mb-4 font-display text-sm font-bold text-[var(--text-heading)]">Technology</h4>
+            <ul className="space-y-2 text-sm text-[var(--text-muted)]">
+              <li>Gemini &amp; RAG grounding</li>
+              <li>React &amp; TanStack Query</li>
+              <li>Express &amp; PostgreSQL</li>
             </ul>
           </div>
-          
+
           <div>
-            <h4 className="font-semibold text-card-foreground mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Medical Disclaimer</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">HIPAA Compliance</a></li>
+            <h4 className="mb-4 font-display text-sm font-bold text-[var(--text-heading)]">Legal</h4>
+            <ul className="space-y-2 text-sm text-[var(--text-muted)]">
+              <li>
+                <span className="cursor-default hover:text-[var(--text-body)]">Privacy Policy</span>
+              </li>
+              <li>
+                <span className="cursor-default hover:text-[var(--text-body)]">Terms of Service</span>
+              </li>
+              <li>
+                <span className="cursor-default hover:text-[var(--text-body)]">Medical Disclaimer</span>
+              </li>
             </ul>
           </div>
         </div>
-        
-        <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 AI Healthcare Intelligence Network. All rights reserved. This platform is for informational purposes only.</p>
+
+        <div className="mt-8 border-t border-[var(--msc-border)] pt-8 text-center text-sm text-[var(--text-muted)]">
+          <p>
+            © {new Date().getFullYear()} MediSCAN Ai. Educational / demo platform — not a substitute for professional
+            care.
+          </p>
         </div>
       </div>
     </footer>
