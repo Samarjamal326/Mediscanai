@@ -8,6 +8,7 @@ export default function Navbar() {
     { href: "/disease-prediction", label: "Disease Prediction" },
     { href: "/drug-recommendation", label: "Drug Finder" },
     { href: "/heart-assessment", label: "Heart Risk" },
+    { href: "/medibot", label: "MediBot" },
   ];
 
   return (

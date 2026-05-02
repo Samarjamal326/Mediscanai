@@ -207,16 +207,18 @@ sequenceDiagram
 
 ---
 
-### 4. MediBot (AI Health Chatbot)
+### 4. MediBot (AI Health Chatbot with RAG)
 
-A real-time conversational AI chatbot where users can ask medical questions. It maintains a chat session with message history.
+A real-time conversational AI chatbot where users can ask medical questions. It is powered by a custom **Retrieval-Augmented Generation (RAG)** Python microservice.
 
 | Aspect | How It Works |
 |--------|-------------|
-| **Session Management** | Each chat page visit creates a unique `sessionId` — messages are grouped by session |
-| **AI Technique** | **Conversational AI with System Prompting** — System prompt defines MediBot's persona, guidelines, and ethical boundaries |
-| **System Prompt Role** | Instructed to: provide evidence-based info, include medical disclaimers, suggest professional consultation, and never provide specific diagnoses |
-| **Fallback** | Returns a templated educational response acknowledging the question and citing high traffic |
+| **Architecture** | React Frontend → Node.js Express API → Python Flask RAG Service |
+| **Retrieval System** | Uses `sentence-transformers` locally to embed queries and searches a **Pinecone** vector database containing 11,500+ medical chunks. |
+| **Generative AI** | Google Gemini 2.5 Flash compiles the retrieved context into a cited, medical-grade answer. |
+| **Capabilities** | Memory tracking, contextual query rewriting, strict medical domain guardrails, and automated citation mapping. |
+
+*(For complete technical details on the RAG pipeline, see the `Medical - RAG/README.md` file.)*
 
 ---
 

@@ -1,0 +1,135 @@
+================================================================================
+  MEDICAL RAG - PROJECT PLAN & PIPELINE DOCUMENTATION
+  Project: Medical - RAG
+  Engineer: Samar
+  Goal: Build a standalone Medical RAG engine that can later plug into MediScan AI
+================================================================================
+
+
+--------------------------------------------------------------------------------
+PHASE 0: PROJECT SETUP (DONE)
+--------------------------------------------------------------------------------
+[x] Created project folder: Medical - RAG
+[x] Initialized package.json
+[x] Installed LangChain + @langchain/google-genai
+[x] Created .env with GEMINI_API_KEY
+[x] Verified connection to Google Gemini (gemini-2.0-flash)
+[x] Quota hit on free tier — resets at midnight UTC (5:30 AM IST)
+
+
+--------------------------------------------------------------------------------
+PHASE 1: DATA COLLECTION
+--------------------------------------------------------------------------------
+Before building the RAG system, we need the "knowledge" it will search through.
+This is the most important phase — garbage in, garbage out.
+
+CATEGORIES OF DATA WE NEED:
+-------------------------------------------------------------
+| #  | Category               | Keywords / Examples                          |
+|----|------------------------|----------------------------------------------|
+| 1  | Diseases & Conditions  | Diabetes, Hypertension, Asthma, Tuberculosis |
+|    |                        | Heart Disease, Anemia, Arthritis, Cancer     |
+| 2  | Symptoms               | Fever, Cough, Fatigue, Chest Pain, Dizziness |
+|    |                        | Shortness of Breath, Nausea, Headache        |
+| 3  | Drugs & Medications    | Metformin, Lisinopril, Atorvastatin, Aspirin |
+|    |                        | Amoxicillin, Ibuprofen, Omeprazole           |
+| 4  | Drug Side Effects      | Nausea, Rash, Dizziness, Liver Toxicity      |
+|    |                        | Dry Cough (ACE inhibitors), Insomnia         |
+| 5  | Drug Interactions      | Warfarin + Aspirin, SSRIs + MAOIs            |
+|    |                        | Metformin + Alcohol, Statins + Grapefruit    |
+| 6  | Lab Tests & Results    | CBC, HbA1c, Cholesterol Panel, Creatinine    |
+|    |                        | Thyroid (TSH), Blood Pressure Readings       |
+| 7  | Nutrition & Lifestyle  | Diet for Diabetes, Hypertension Foods        |
+|    |                        | Exercise for Heart Disease, Sleep Disorders  |
+| 8  | Medical Procedures     | ECG, MRI, X-Ray, Blood Transfusion           |
+|    |                        | Dialysis, Colonoscopy, Biopsy                |
+| 9  | First Aid / Emergency  | CPR Steps, Stroke Signs (FAST), Anaphylaxis  |
+|    |                        | Choking, Burns, Fractures, Seizures          |
+| 10 | Mental Health          | Anxiety, Depression, Bipolar Disorder        |
+|    |                        | PTSD, Panic Attacks, Schizophrenia           |
+-------------------------------------------------------------
+
+WHERE TO GET THIS DATA (Free & Open Source):
+  - MedlinePlus (medlineplus.gov) — General medical encyclopedia
+  - OpenFDA (open.fda.gov) — Drug labels, side effects (JSON API available)
+  - WHO Fact Sheets (who.int) — Disease overviews
+  - PubMed Abstracts (pubmed.ncbi.nlm.nih.gov) — Clinical research
+  - DrugBank Open Data (drugbank.com) — Drug interactions
+  - Wikipedia Medical Articles — Good starting point (plain text, easy to parse)
+
+DATA FORMAT WE WILL USE:
+  - Plain .txt files per category (easiest to load with LangChain TextLoader)
+  - One file per disease or drug (e.g., diabetes.txt, metformin.txt)
+  - We can add PDFs later using PDFLoader
+
+
+--------------------------------------------------------------------------------
+PHASE 2: DATA INGESTION (THE "LEARNING" PIPELINE)
+--------------------------------------------------------------------------------
+This is the offline step — we run it once to "teach" the system.
+
+Steps:
+  Step 1 — Load:      Read all .txt files from the /data folder
+  Step 2 — Split:     Break each file into small chunks (500 chars, 50 overlap)
+  Step 3 — Embed:     Convert each chunk into a vector using Gemini Embeddings
+  Step 4 — Store:     Save all vectors into a local FAISS index file
+
+Files we will write:
+  src/ingest.ts       <- Run this once to build the vector store
+  src/embedder.ts     <- Handles the Gemini embedding connection
+
+
+--------------------------------------------------------------------------------
+PHASE 3: THE RETRIEVAL PIPELINE (THE "SEARCH" ENGINE)
+--------------------------------------------------------------------------------
+This is what runs every time a user sends a message.
+
+Steps:
+  Step 1 — User sends a question
+  Step 2 — Convert question into a vector (embedding)
+  Step 3 — Search FAISS for the top 4 most similar chunks
+  Step 4 — Combine those chunks into a "context" block
+  Step 5 — Send context + question to Gemini with a medical system prompt
+  Step 6 — Return Gemini's grounded response
+
+Files we will write:
+  src/retriever.ts    <- Loads FAISS index + performs similarity search
+  src/chain.ts        <- Builds the final RAG chain (context + LLM)
+
+
+--------------------------------------------------------------------------------
+PHASE 4: API SERVER (CONNECT TO MEDIBOT)
+--------------------------------------------------------------------------------
+We wrap our RAG chain in a simple Express server so MediScan AI can call it.
+
+  src/server.ts       <- POST /ask  { question: string } -> { answer: string }
+
+This server runs independently. MediScan AI's backend just calls this endpoint.
+This is the "microservice" pattern — clean and professional.
+
+
+--------------------------------------------------------------------------------
+PHASE 5: TESTING & EVALUATION
+--------------------------------------------------------------------------------
+We test the system with a set of medical questions and check if the answers:
+  - Are grounded in our documents (not hallucinated)
+  - Are accurate and helpful
+  - Say "I don't know" when the topic isn't in our data
+
+  tests/test-questions.txt    <- List of test queries we will evaluate
+
+
+--------------------------------------------------------------------------------
+CURRENT STATUS
+--------------------------------------------------------------------------------
+[x] Phase 0 — Setup Complete
+[ ] Phase 1 — Data Collection (NEXT STEP)
+[ ] Phase 2 — Ingestion Pipeline
+[ ] Phase 3 — Retrieval Chain
+[ ] Phase 4 — API Server
+[ ] Phase 5 — Testing
+
+
+================================================================================
+  END OF DOCUMENT
+================================================================================

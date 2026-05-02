@@ -1,16 +1,12 @@
 import { 
-  type User, 
-  type InsertUser,
-  type DiseasePrediction,
-  type InsertDiseasePrediction,
-  type DrugRecommendation,
-  type InsertDrugRecommendation,
-  type HeartAssessment,
-  type InsertHeartAssessment,
-  type ChatMessage,
-  type InsertChatMessage
+  users, type User, type InsertUser,
+  diseasePredictions, type DiseasePrediction, type InsertDiseasePrediction,
+  drugRecommendations, type DrugRecommendation, type InsertDrugRecommendation,
+  heartAssessments, type HeartAssessment, type InsertHeartAssessment,
+  chatMessages, type ChatMessage, type InsertChatMessage
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -35,122 +31,71 @@ export interface IStorage {
   getChatMessages(sessionId: string, userId?: string): Promise<ChatMessage[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private diseasePredictions: Map<string, DiseasePrediction>;
-  private drugRecommendations: Map<string, DrugRecommendation>;
-  private heartAssessments: Map<string, HeartAssessment>;
-  private chatMessages: Map<string, ChatMessage>;
-
-  constructor() {
-    this.users = new Map();
-    this.diseasePredictions = new Map();
-    this.drugRecommendations = new Map();
-    this.heartAssessments = new Map();
-    this.chatMessages = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { 
-      ...insertUser, 
-      id,
-      createdAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async createDiseasePrediction(prediction: InsertDiseasePrediction & { userId?: string }): Promise<DiseasePrediction> {
-    const id = randomUUID();
-    const diseasePrediction: DiseasePrediction = {
-      ...prediction,
-      id,
-      prediction: null,
-      createdAt: new Date()
-    };
-    this.diseasePredictions.set(id, diseasePrediction);
-    return diseasePrediction;
+    const [record] = await db.insert(diseasePredictions).values(prediction).returning();
+    return record;
   }
 
   async getDiseasePredictions(userId?: string): Promise<DiseasePrediction[]> {
-    const predictions = Array.from(this.diseasePredictions.values());
     if (userId) {
-      return predictions.filter(p => p.userId === userId);
+      return db.select().from(diseasePredictions).where(eq(diseasePredictions.userId, userId));
     }
-    return predictions;
+    return db.select().from(diseasePredictions);
   }
 
   async createDrugRecommendation(recommendation: InsertDrugRecommendation & { userId?: string }): Promise<DrugRecommendation> {
-    const id = randomUUID();
-    const drugRecommendation: DrugRecommendation = {
-      ...recommendation,
-      id,
-      alternatives: null,
-      createdAt: new Date()
-    };
-    this.drugRecommendations.set(id, drugRecommendation);
-    return drugRecommendation;
+    const [record] = await db.insert(drugRecommendations).values(recommendation).returning();
+    return record;
   }
 
   async getDrugRecommendations(userId?: string): Promise<DrugRecommendation[]> {
-    const recommendations = Array.from(this.drugRecommendations.values());
     if (userId) {
-      return recommendations.filter(r => r.userId === userId);
+      return db.select().from(drugRecommendations).where(eq(drugRecommendations.userId, userId));
     }
-    return recommendations;
+    return db.select().from(drugRecommendations);
   }
 
   async createHeartAssessment(assessment: InsertHeartAssessment & { userId?: string }): Promise<HeartAssessment> {
-    const id = randomUUID();
-    const heartAssessment: HeartAssessment = {
-      ...assessment,
-      id,
-      riskAssessment: null,
-      createdAt: new Date()
-    };
-    this.heartAssessments.set(id, heartAssessment);
-    return heartAssessment;
+    const [record] = await db.insert(heartAssessments).values(assessment).returning();
+    return record;
   }
 
   async getHeartAssessments(userId?: string): Promise<HeartAssessment[]> {
-    const assessments = Array.from(this.heartAssessments.values());
     if (userId) {
-      return assessments.filter(a => a.userId === userId);
+      return db.select().from(heartAssessments).where(eq(heartAssessments.userId, userId));
     }
-    return assessments;
+    return db.select().from(heartAssessments);
   }
 
   async createChatMessage(message: InsertChatMessage & { userId?: string }): Promise<ChatMessage> {
-    const id = randomUUID();
-    const chatMessage: ChatMessage = {
-      ...message,
-      id,
-      response: null,
-      createdAt: new Date()
-    };
-    this.chatMessages.set(id, chatMessage);
-    return chatMessage;
+    const [record] = await db.insert(chatMessages).values(message).returning();
+    return record;
   }
 
   async getChatMessages(sessionId: string, userId?: string): Promise<ChatMessage[]> {
-    const messages = Array.from(this.chatMessages.values());
-    let filtered = messages.filter(m => m.sessionId === sessionId);
+    let query = db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+    const results = await query;
     if (userId) {
-      filtered = filtered.filter(m => m.userId === userId);
+      return results.filter(m => m.userId === userId).sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime());
     }
-    return filtered.sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime());
+    return results.sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime());
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

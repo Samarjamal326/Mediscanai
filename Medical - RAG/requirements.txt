@@ -1,0 +1,7 @@
+python-dotenv
+pypdf
+pandas
+sentence-transformers
+pinecone
+flask
+flask-cors

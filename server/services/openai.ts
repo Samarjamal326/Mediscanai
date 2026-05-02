@@ -151,27 +151,29 @@ function generateFallbackHeartRisk(data: any) {
 
 export async function generateMedicalResponse(message: string): Promise<string> {
   try {
-    const model = getClient().getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      systemInstruction: `You are MediBot, an AI-powered medical assistant with access to comprehensive medical literature. 
-          You provide accurate, evidence-based health information while emphasizing the importance of professional medical consultation.
-          
-          Guidelines:
-          - Provide informative, helpful responses based on medical knowledge
-          - Always include medical disclaimers when appropriate
-          - Suggest consulting healthcare professionals for diagnosis or treatment
-          - Use clear, accessible language
-          - Cite confidence levels when possible
-          - Never provide specific diagnoses or treatment recommendations
-          
-          Format your responses to be helpful and educational while maintaining medical ethics.`
+    // Call the Python RAG microservice instead of Gemini directly
+    const response = await fetch("http://127.0.0.1:5001/api/rag-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: message,
+        history: [] // We can add history later if needed
+      }),
     });
 
-    const result = await model.generateContent(message);
-    const response = result.response;
-    const text = response.text();
+    if (!response.ok) {
+      throw new Error(`RAG API returned status: ${response.status}`);
+    }
 
-    return text || "I apologize, but I couldn't generate a response. Please try rephrasing your question.";
+    const data = await response.json();
+    
+    if (data.success && data.answer) {
+      return data.answer;
+    }
+
+    return "I apologize, but I couldn't generate a response from the medical database. Please try rephrasing your question.";
   } catch (error) {
     console.error("Gemini API error:", error);
     // Fallback response when Gemini is unavailable
