@@ -290,18 +290,6 @@ The application uses a **Strategy Pattern** for storage:
 
 ## Offline Fallback System
 
-A key design decision in this project is the **dual-mode AI system**. Every AI-powered feature has a local fallback path:
-
-```mermaid
-graph TD
-    A["User Request"] --> B{"Gemini API Available?"}
-    B -->|Yes| C["Gemini AI Analysis"]
-    B -->|No (API error / offline)| D["Rule-Based Fallback"]
-    C --> E["Return Response"]
-    D --> E
-    E --> F["Frontend Renders Result"]
-```
-
 | Feature | Fallback Method |
 |---------|----------------|
 | Disease Prediction | Keyword pattern matching on symptom text → maps to predefined diseases |
