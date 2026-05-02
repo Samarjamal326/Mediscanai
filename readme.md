@@ -209,16 +209,45 @@ sequenceDiagram
 
 ### 4. MediBot (AI Health Chatbot with RAG)
 
-A real-time conversational AI chatbot where users can ask medical questions. It is powered by a custom **Retrieval-Augmented Generation (RAG)** Python microservice.
+A real-time conversational AI chatbot powered by a custom **Retrieval-Augmented Generation (RAG)** Python microservice. Unlike a standard LLM chatbot, MediBot actively retrieves relevant passages from a curated medical knowledge base before generating any response.
 
-| Aspect | How It Works |
-|--------|-------------|
-| **Architecture** | React Frontend → Node.js Express API → Python Flask RAG Service |
-| **Retrieval System** | Uses `sentence-transformers` locally to embed queries and searches a **Pinecone** vector database containing 11,500+ medical chunks. |
-| **Generative AI** | Google Gemini 2.5 Flash compiles the retrieved context into a cited, medical-grade answer. |
-| **Capabilities** | Memory tracking, contextual query rewriting, strict medical domain guardrails, and automated citation mapping. |
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as React Page
+    participant API as Express API
+    participant Flask as Python RAG Server
+    participant Gemini as Gemini 2.5 Flash
+    participant Pinecone as Pinecone DB
 
-*(For complete technical details on the RAG pipeline, see the `Medical - RAG/README.md` file.)*
+    User->>Frontend: Types a question
+    Frontend->>API: POST /api/chat
+    API->>Flask: Forward request + chat history
+    Flask->>Gemini: Rewrite query using history context
+    Gemini-->>Flask: Standalone query
+    Flask->>Flask: Embed query (all-MiniLM-L6-v2)
+    Flask->>Pinecone: Semantic Vector Search
+    Pinecone-->>Flask: Top 4 Medical Chunks
+    Flask->>Gemini: Send Prompt (Context + Guardrails)
+    alt Is Medical Question?
+        Gemini-->>Flask: Structured answer with citations
+    else Non-Medical Question
+        Gemini-->>Flask: Refusal ("I can only answer health questions")
+    end
+    Flask-->>API: Answer String
+    API-->>Frontend: Markdown Response
+    Frontend-->>User: Rendered Response with Tables/Lists
+```
+
+| Core Capability | Description |
+|-----------------|-------------|
+| **Semantic Retrieval** | Embeds queries locally (`all-MiniLM-L6-v2`) and searches Pinecone by meaning, not keywords. |
+| **Conversational Memory** | Maintains a rolling chat history and understands follow-up questions in context. |
+| **Query Rewriting** | Automatically rewrites vague follow-up questions into standalone, searchable queries. |
+| **Medical Guardrails** | Strictly refuses to answer any question outside the domain of medicine and health. |
+| **Source Citations** | Answers are grounded in real datasets (Diabetes PDFs, Indian Pharmacopoeia, etc.) with references. |
+
+*(For complete technical details on the RAG ingestion pipeline, chunking strategies, and dataset sizes, see the `Medical - RAG/README.md` file.)*
 
 ---
 
